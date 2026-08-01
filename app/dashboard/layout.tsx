@@ -21,7 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="w-64 bg-black text-white flex flex-col shadow-2xl relative z-10">
         <div className="p-6 border-b border-gray-800">
           <Link href="/" className="text-3xl font-extrabold tracking-tighter flex items-center gap-1">
-            Near<span className="text-orange-500">Me</span>
+            Lagama<span className="text-orange-500">LK</span>
             <span className="w-2 h-2 rounded-full bg-orange-500 mb-4"></span>
           </Link>
           <p className="text-xs text-gray-400 mt-2 font-semibold uppercase tracking-wider">Admin Portal</p>
