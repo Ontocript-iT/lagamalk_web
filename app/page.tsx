@@ -8,7 +8,7 @@ export default function Home() {
       
       <main className="flex-grow flex flex-col items-center justify-center px-4 text-center">
         <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
-          Find Everything <span className="text-orange-500">Near Me</span>
+          Find Everything <span className="text-orange-500">Lagama LK</span>
         </h1>
         <p className="text-lg md:text-xl text-gray-600 max-w-2xl mb-10">
           The ultimate location search app. Discover restaurants, services, and hidden gems right around the corner. 

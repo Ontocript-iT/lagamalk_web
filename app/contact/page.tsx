@@ -26,7 +26,7 @@ export default function Contact() {
           <div className="text-center max-w-2xl mx-auto mb-16 mt-8">
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Get in Touch</h1>
             <p className="text-gray-600 text-lg">
-              Have a question about the Near Me app, want to become a partner, or need technical support? Drop us a line.
+              Have a question about the Lagama LK app, want to become a partner, or need technical support? Drop us a line.
             </p>
           </div>
 
