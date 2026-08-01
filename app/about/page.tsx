@@ -16,7 +16,7 @@ export default function About() {
               Connecting You to Your <span className="text-orange-500">World</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-400 leading-relaxed">
-              Near Me was built on a simple idea: the best experiences, services, and places shouldn't be hard to find. We bridge the gap between local communities and the businesses that serve them.
+              Lagama LK was built on a simple idea: the best experiences, services, and places shouldn't be hard to find. We bridge the gap between local communities and the businesses that serve them.
             </p>
           </div>
         </section>
@@ -30,7 +30,7 @@ export default function About() {
                 We empower users to discover hidden gems and essential services right around the corner, while giving local partners the platform they need to thrive in a digital-first world.
               </p>
               <p className="text-gray-600 text-lg">
-                Whether you are looking for a quick bite, a reliable mechanic, or a quiet place to work, Near Me puts the power of discovery directly in your pocket.
+                Whether you are looking for a quick bite, a reliable mechanic, or a quiet place to work, Lagama LK puts the power of discovery directly in your pocket.
               </p>
             </div>
             

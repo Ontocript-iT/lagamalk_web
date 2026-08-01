@@ -32,7 +32,7 @@ export default function Login() {
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border-t-4 border-orange-500">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-black mb-2">Admin Portal</h2>
-          <p className="text-gray-500">Sign in to manage Near Me</p>
+          <p className="text-gray-500">Sign in to manage Lagama LK</p>
         </div>
 
         {error && (
