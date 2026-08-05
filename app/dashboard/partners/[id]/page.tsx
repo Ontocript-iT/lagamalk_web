@@ -1,17 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getPartnerDetails, updatePartnerStatus } from "@/services/admin";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+
+// Set Mapbox access token from environment variables
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 
 export default function PartnerDetails() {
   const params = useParams();
   const partnerId = Number(params.id);
-  
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  // State to hold place selected for Map Modal
+  const [selectedPlace, setSelectedPlace] = useState<any>(null);
 
   // Extracted fetch function to reuse after status update
   const fetchDetails = async () => {
@@ -34,15 +42,20 @@ export default function PartnerDetails() {
     const currentStatus = data.partnerInfo.enabled;
     const newStatus = !currentStatus;
 
-    // Safety confirmation dialog
-    if (!confirm(`Are you sure you want to ${newStatus ? 'ACTIVATE' : 'DEACTIVATE'} this partner account?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to ${
+          newStatus ? "ACTIVATE" : "DEACTIVATE"
+        } this partner account?`
+      )
+    ) {
       return;
     }
 
     setIsUpdatingStatus(true);
     try {
       await updatePartnerStatus(partnerId, newStatus);
-      await fetchDetails(); // Refresh data to show new status immediately
+      await fetchDetails();
     } catch (error) {
       console.error("Failed to update status", error);
       alert("An error occurred while updating the status.");
@@ -52,11 +65,19 @@ export default function PartnerDetails() {
   };
 
   if (loading) {
-    return <div className="py-20 text-center text-gray-500 font-semibold animate-pulse">Loading partner profile...</div>;
+    return (
+      <div className="py-20 text-center text-gray-500 font-semibold animate-pulse">
+        Loading partner profile...
+      </div>
+    );
   }
 
   if (!data || !data.partnerInfo) {
-    return <div className="py-20 text-center text-red-500 font-bold">Partner not found.</div>;
+    return (
+      <div className="py-20 text-center text-red-500 font-bold">
+        Partner not found.
+      </div>
+    );
   }
 
   const { partnerInfo, places, paymentHistory } = data;
@@ -65,7 +86,10 @@ export default function PartnerDetails() {
     <div className="max-w-6xl mx-auto space-y-8">
       {/* Header & Back Button */}
       <div>
-        <Link href="/dashboard/partners" className="text-orange-500 font-bold text-sm hover:underline mb-4 inline-block">
+        <Link
+          href="/dashboard/partners"
+          className="text-orange-500 font-bold text-sm hover:underline mb-4 inline-block"
+        >
           &larr; Back to Directory
         </Link>
         <h1 className="text-3xl font-extrabold text-black">Partner Profile</h1>
@@ -74,28 +98,43 @@ export default function PartnerDetails() {
       {/* Profile Card */}
       <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center relative overflow-hidden gap-6">
         <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500 opacity-10 rounded-bl-full pointer-events-none"></div>
-        
+
         <div className="flex flex-col md:flex-row gap-8 items-start md:items-center z-10 w-full md:w-auto">
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-3xl font-black text-gray-400 border-4 border-white shadow-md">
-            {partnerInfo.firstName[0]}{partnerInfo.lastName?.[0] || ""}
+            {partnerInfo.firstName[0]}
+            {partnerInfo.lastName?.[0] || ""}
           </div>
-          
+
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
-              <h2 className="text-2xl font-bold">{partnerInfo.firstName} {partnerInfo.lastName}</h2>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${partnerInfo.enabled ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+              <h2 className="text-2xl font-bold">
+                {partnerInfo.firstName} {partnerInfo.lastName}
+              </h2>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  partnerInfo.enabled
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
                 {partnerInfo.enabled ? "ACTIVE" : "DISABLED"}
               </span>
             </div>
-            <p className="text-gray-500 font-mono text-sm mb-4">Account ID: #{partnerInfo.id}</p>
-            
+            <p className="text-gray-500 font-mono text-sm mb-4">
+              Account ID: #{partnerInfo.id}
+            </p>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Mobile</p>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                  Mobile
+                </p>
                 <p className="font-semibold">{partnerInfo.mobileNumber}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Email</p>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                  Email
+                </p>
                 <p className="font-semibold">{partnerInfo.email}</p>
               </div>
             </div>
@@ -104,47 +143,83 @@ export default function PartnerDetails() {
 
         {/* STATUS ACTION BUTTON */}
         <div className="z-10 w-full md:w-auto mt-4 md:mt-0">
-          <button 
+          <button
             onClick={handleToggleStatus}
             disabled={isUpdatingStatus}
             className={`w-full md:w-auto px-6 py-3 font-bold rounded-lg text-sm transition-colors border shadow-sm disabled:opacity-50 ${
-              partnerInfo.enabled 
-                ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100" 
+              partnerInfo.enabled
+                ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
                 : "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
             }`}
           >
-            {isUpdatingStatus ? "Updating..." : (partnerInfo.enabled ? "Deactivate Account" : "Activate Account")}
+            {isUpdatingStatus
+              ? "Updating..."
+              : partnerInfo.enabled
+              ? "Deactivate Account"
+              : "Activate Account"}
           </button>
         </div>
       </div>
 
       {/* Two Column Layout for Places and Payments */}
       <div className="grid lg:grid-cols-2 gap-8">
-        
         {/* Registered Places */}
         <div>
           <h3 className="text-xl font-bold mb-4 flex items-center justify-between">
             Registered Places
-            <span className="bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full">{places?.length || 0}</span>
+            <span className="bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full">
+              {places?.length || 0}
+            </span>
           </h3>
           <div className="space-y-4">
-            {places && places.length > 0 ? places.map((place: any) => (
-              <div key={place.id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex items-center gap-4">
-                {place.businessLogo ? (
-                  <img src={place.businessLogo} alt={place.name} className="w-16 h-16 rounded-md object-cover border border-gray-200" />
-                ) : (
-                  <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-xl">🏪</div>
-                )}
-                <div>
-                  <h4 className="font-bold text-lg">{place.name}</h4>
-                  <p className="text-sm text-gray-500">{place.address}, {place.city?.name}</p>
-                  <span className={`inline-block mt-2 text-xs font-bold px-2 py-1 rounded ${place.active ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-800"}`}>
-                    {place.active ? "ACTIVE LISTING" : "PENDING APPROVAL"}
-                  </span>
+            {places && places.length > 0 ? (
+              places.map((place: any) => (
+                <div
+                  key={place.id}
+                  className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex items-start gap-4"
+                >
+                  {place.businessLogo ? (
+                    <img
+                      src={place.businessLogo}
+                      alt={place.name}
+                      className="w-16 h-16 rounded-md object-cover border border-gray-200 flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-xl flex-shrink-0">
+                      🏪
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <h4 className="font-bold text-lg">{place.name}</h4>
+                    <p className="text-sm text-gray-500">
+                      {place.address}, {place.city?.name}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <span
+                        className={`inline-block text-xs font-bold px-2 py-1 rounded ${
+                          place.active
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-orange-100 text-orange-800"
+                        }`}
+                      >
+                        {place.active ? "ACTIVE LISTING" : "PENDING APPROVAL"}
+                      </span>
+
+                      {/* VIEW ON MAP BUTTON */}
+                      <button
+                        onClick={() => setSelectedPlace(place)}
+                        className="text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-1 rounded transition-colors border border-orange-200 flex items-center gap-1"
+                      >
+                        📍 View on Map
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="bg-gray-50 p-6 rounded-lg text-center text-gray-500 text-sm">
+                No places registered yet.
               </div>
-            )) : (
-              <div className="bg-gray-50 p-6 rounded-lg text-center text-gray-500 text-sm">No places registered yet.</div>
             )}
           </div>
         </div>
@@ -153,7 +228,9 @@ export default function PartnerDetails() {
         <div>
           <h3 className="text-xl font-bold mb-4 flex items-center justify-between">
             Payment History
-            <span className="bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full">{paymentHistory?.length || 0}</span>
+            <span className="bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full">
+              {paymentHistory?.length || 0}
+            </span>
           </h3>
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
             {paymentHistory && paymentHistory.length > 0 ? (
@@ -169,16 +246,26 @@ export default function PartnerDetails() {
                   {paymentHistory.map((payment: any) => (
                     <tr key={payment.id} className="hover:bg-gray-50">
                       <td className="p-4">
-                        <p className="font-bold text-black">{payment.plan.replace("_", " ")}</p>
-                        <p className="text-xs text-gray-400 font-mono">{payment.referenceNumber}</p>
+                        <p className="font-bold text-black">
+                          {payment.plan.replace("_", " ")}
+                        </p>
+                        <p className="text-xs text-gray-400 font-mono">
+                          {payment.referenceNumber}
+                        </p>
                       </td>
-                      <td className="p-4 font-black">Rs. {payment.amount}</td>
+                      <td className="p-4 font-black">
+                        Rs. {payment.amount}
+                      </td>
                       <td className="p-4">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          payment.status === "APPROVED" ? "bg-green-100 text-green-700" : 
-                          payment.status === "PENDING" ? "bg-orange-100 text-orange-800" : 
-                          "bg-red-100 text-red-700"
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-bold ${
+                            payment.status === "APPROVED"
+                              ? "bg-green-100 text-green-700"
+                              : payment.status === "PENDING"
+                              ? "bg-orange-100 text-orange-800"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
                           {payment.status}
                         </span>
                       </td>
@@ -187,11 +274,85 @@ export default function PartnerDetails() {
                 </tbody>
               </table>
             ) : (
-              <div className="p-6 text-center text-gray-500 text-sm bg-gray-50">No payment history found.</div>
+              <div className="p-6 text-center text-gray-500 text-sm bg-gray-50">
+                No payment history found.
+              </div>
             )}
           </div>
         </div>
-        
+      </div>
+
+      {/* MAP MODAL POPUP */}
+      {selectedPlace && (
+        <MapModal
+          place={selectedPlace}
+          onClose={() => setSelectedPlace(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Map Modal Component
+function MapModal({ place, onClose }: { place: any; onClose: () => void }) {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    // Handle lat/lng property naming safely (lat/latitude, lng/longitude)
+    const lng = Number(place.longitude ?? place.lng ?? 0);
+    const lat = Number(place.latitude ?? place.lat ?? 0);
+
+    // Mapbox expects coordinates in [longitude, latitude] order
+    const map = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [lng, lat],
+      zoom: 16, // High zoom level as requested
+    });
+
+    // Add navigation controls (Zoom +/- buttons)
+    map.addControl(new mapboxgl.NavigationControl(), "top-right");
+
+    // Add Marker on location
+    const marker = new mapboxgl.Marker({ color: "#f97316" })
+      .setLngLat([lng, lat])
+      .setPopup(
+        new mapboxgl.Popup({ offset: 25 }).setHTML(
+          `<h4 style="font-weight:bold;margin-bottom:2px">${place.name}</h4><p style="margin:0;font-size:12px;color:#666">${place.address || ""}</p>`
+        )
+      )
+      .addTo(map);
+
+    // Automatically open popup on load
+    marker.togglePopup();
+
+    // Cleanup on unmount
+    return () => map.remove();
+  }, [place]);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden border border-gray-100 relative animate-in fade-in zoom-in-95 duration-200">
+        {/* Header */}
+        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">{place.name}</h3>
+            <p className="text-xs text-gray-500">{place.address}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 flex items-center justify-center font-bold text-sm transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Map Container */}
+        <div className="w-full h-[400px] relative">
+          <div ref={mapContainerRef} className="w-full h-full" />
+        </div>
       </div>
     </div>
   );
