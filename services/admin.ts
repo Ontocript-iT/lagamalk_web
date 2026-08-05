@@ -123,7 +123,7 @@ export const getPendingSubscriptions1 = async (page: number, mobile: string = ""
   if (mobile) params.append("mobile", mobile);
   if (reference) params.append("reference", reference);
 
-  const response = await fetch(`http://localhost:8080/api/admin/partners/payments?${params.toString()}`, {
+  const response = await fetch(`${API_URL}/api/admin/partners/payments?${params.toString()}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
