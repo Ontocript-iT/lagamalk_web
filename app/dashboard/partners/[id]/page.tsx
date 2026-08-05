@@ -18,6 +18,10 @@ export default function PartnerDetails() {
   const [loading, setLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<boolean | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+
   // State to hold place selected for Map Modal
   const [selectedPlace, setSelectedPlace] = useState<any>(null);
 
@@ -38,27 +42,31 @@ export default function PartnerDetails() {
   }, [partnerId]);
 
   // Handle the Status Toggle Action
-  const handleToggleStatus = async () => {
-    const currentStatus = data.partnerInfo.enabled;
+ // 1. Opens the confirmation modal instead of browser confirm()
+  const handleToggleStatusClick = () => {
+    // Note: fallback to 'enabled' if 'active' is undefined based on previous context
+    const currentStatus = data.partnerInfo.active ?? data.partnerInfo.active; 
     const newStatus = !currentStatus;
+    
+    setPendingStatus(newStatus);
+    setStatusError(null); // Reset errors
+    setIsConfirmModalOpen(true);
+  };
 
-    if (
-      !confirm(
-        `Are you sure you want to ${
-          newStatus ? "ACTIVATE" : "DEACTIVATE"
-        } this partner account?`
-      )
-    ) {
-      return;
-    }
-
+  // 2. Executes the API call from inside the modal
+  const confirmToggleStatus = async () => {
+    if (pendingStatus === null) return;
+    
     setIsUpdatingStatus(true);
+    setStatusError(null);
+    
     try {
-      await updatePartnerStatus(partnerId, newStatus);
+      await updatePartnerStatus(partnerId, pendingStatus);
       await fetchDetails();
+      setIsConfirmModalOpen(false); // Close modal on success
     } catch (error) {
       console.error("Failed to update status", error);
-      alert("An error occurred while updating the status.");
+      setStatusError("An error occurred while updating the status. Please try again."); // Show error in modal instead of alert()
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -112,12 +120,12 @@ export default function PartnerDetails() {
               </h2>
               <span
                 className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  partnerInfo.enabled
+                  partnerInfo.active
                     ? "bg-green-100 text-green-700"
                     : "bg-red-100 text-red-700"
                 }`}
               >
-                {partnerInfo.enabled ? "ACTIVE" : "DISABLED"}
+                {partnerInfo.active ? "ACTIVE" : "DISABLED"}
               </span>
             </div>
             <p className="text-gray-500 font-mono text-sm mb-4">
@@ -143,21 +151,20 @@ export default function PartnerDetails() {
 
         {/* STATUS ACTION BUTTON */}
         <div className="z-10 w-full md:w-auto mt-4 md:mt-0">
-          <button
-            onClick={handleToggleStatus}
-            disabled={isUpdatingStatus}
-            className={`w-full md:w-auto px-6 py-3 font-bold rounded-lg text-sm transition-colors border shadow-sm disabled:opacity-50 ${
-              partnerInfo.enabled
-                ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
-                : "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
-            }`}
-          >
-            {isUpdatingStatus
-              ? "Updating..."
-              : partnerInfo.enabled
-              ? "Deactivate Account"
-              : "Activate Account"}
-          </button>
+          {/* Change onClick to handleToggleStatusClick */}
+<button
+  onClick={handleToggleStatusClick}
+  disabled={isUpdatingStatus}
+  className={`w-full md:w-auto px-6 py-3 font-bold rounded-lg text-sm transition-colors border shadow-sm disabled:opacity-50 ${
+    (data.partnerInfo.active ?? data.partnerInfo.active)
+      ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+      : "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+  }`}
+>
+  {(data.partnerInfo.active ?? data.partnerInfo.active)
+    ? "Deactivate Account"
+    : "Activate Account"}
+</button>
         </div>
       </div>
 
@@ -289,6 +296,51 @@ export default function PartnerDetails() {
           onClose={() => setSelectedPlace(null)}
         />
       )}
+
+      {/* CUSTOM STATUS CONFIRMATION MODAL */}
+      {isConfirmModalOpen && pendingStatus !== null && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative animate-in zoom-in-95 duration-200">
+            
+            <div className="mb-6">
+              <h3 className="text-xl font-black text-gray-900 mb-2">Confirm Action</h3>
+              <p className="text-gray-600 text-sm">
+                Are you sure you want to <strong className={pendingStatus ? "text-green-600" : "text-red-600"}>
+                  {pendingStatus ? "ACTIVATE" : "DEACTIVATE"}
+                </strong> this partner account?
+              </p>
+            </div>
+
+            {/* Error Message Display inside Modal */}
+            {statusError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs font-bold">
+                {statusError}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsConfirmModalOpen(false)}
+                disabled={isUpdatingStatus}
+                className="px-5 py-2.5 font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmToggleStatus}
+                disabled={isUpdatingStatus}
+                className={`px-5 py-2.5 font-bold rounded-lg transition flex justify-center items-center min-w-[120px] disabled:opacity-50 ${
+                  pendingStatus
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-red-600 hover:bg-red-700 text-white"
+                }`}
+              >
+                {isUpdatingStatus ? "Processing..." : "Yes, Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -353,7 +405,12 @@ function MapModal({ place, onClose }: { place: any; onClose: () => void }) {
         <div className="w-full h-[400px] relative">
           <div ref={mapContainerRef} className="w-full h-full" />
         </div>
+
+        
       </div>
+      
     </div>
+
+    
   );
 }
