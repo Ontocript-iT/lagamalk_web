@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { 
   getPendingPlaces, getPendingOffers, getPendingSubscriptions,
-  approvePlace, updateOfferStatus, approveSubscription 
+  approvePlace, updateOfferStatus, approveSubscription,
+  searchSubscriptionByRef // <-- Added import
 } from "@/services/admin";
 
 export default function PendingApprovals() {
@@ -13,6 +14,9 @@ export default function PendingApprovals() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  
+  // Search State
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,6 +47,8 @@ export default function PendingApprovals() {
 
   useEffect(() => {
     fetchData();
+    // Reset search query when switching tabs
+    setSearchQuery("");
   }, [activeTab, page]);
 
   // Actions
@@ -80,6 +86,30 @@ export default function PendingApprovals() {
     fetchData();
   };
 
+  // --- NEW SEARCH FUNCTION ---
+  const handleSearchSubscription = async () => {
+    if (!searchQuery.trim()) {
+      fetchData(); // Refetch all pending if search is empty
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await searchSubscriptionByRef(searchQuery);
+      if (response && response.status === "success" && response.data) {
+        // Wrap the single object in an array so the table mapping still works
+        setData([response.data]);
+        setTotalPages(1); // Hide pagination for search results
+      } else {
+        setData([]);
+      }
+    } catch (error) {
+      console.error("Search failed", error);
+      setData([]); // Show empty state if not found or error
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto">
       <h1 className="text-3xl font-extrabold mb-6 text-black">Pending Approvals</h1>
@@ -101,6 +131,37 @@ export default function PendingApprovals() {
         ))}
       </div>
 
+      {/* NEW: Search Bar (Only visible on subscriptions tab) */}
+      {activeTab === "subscriptions" && (
+        <div className="mb-6 flex items-center gap-3">
+          <input 
+            type="text" 
+            placeholder="Search by Reference No. (e.g. LS9147684)" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearchSubscription()}
+            className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-md focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
+          />
+          <button 
+            onClick={handleSearchSubscription}
+            className="px-6 py-2 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition"
+          >
+            Search
+          </button>
+          {searchQuery && (
+            <button 
+              onClick={() => { 
+                setSearchQuery(""); 
+                fetchData(); 
+              }}
+              className="px-6 py-2 bg-gray-100 text-gray-600 font-bold rounded-lg hover:bg-gray-200 transition"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Main Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
@@ -108,7 +169,7 @@ export default function PendingApprovals() {
         ) : data.length === 0 ? (
           <div className="py-20 text-center text-gray-500 bg-gray-50">
             <span className="text-4xl block mb-2">🎉</span>
-            All caught up! No pending {activeTab} at the moment.
+            {searchQuery ? "No subscriptions found for that reference." : `All caught up! No pending ${activeTab} at the moment.`}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -209,22 +270,26 @@ export default function PendingApprovals() {
 
                     {/* COMMON STATUS & ACTIONS */}
                     <td className="p-4 text-center">
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded uppercase">Pending</span>
+                      <span className={`px-2 py-1 text-xs font-bold rounded uppercase ${item.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                        {item.status || "Pending"}
+                      </span>
                     </td>
                     <td className="p-4 text-right space-x-2">
                       <button onClick={() => handleView(item)} className="px-3 py-1.5 bg-gray-100 text-gray-700 font-semibold text-xs rounded hover:bg-gray-200 transition">
                         View Details
                       </button>
-                      <button 
-                        onClick={() => {
-                          if (activeTab === "places") handleApprovePlace(item.id);
-                          if (activeTab === "offers") handleApproveOffer(item.id);
-                          if (activeTab === "subscriptions") handleApproveSubscription(item.referenceNumber);
-                        }}
-                        className="px-3 py-1.5 bg-black text-orange-500 font-bold text-xs rounded hover:bg-gray-800 transition"
-                      >
-                        Approve
-                      </button>
+                      {item.status !== "APPROVED" && (
+                        <button 
+                          onClick={() => {
+                            if (activeTab === "places") handleApprovePlace(item.id);
+                            if (activeTab === "offers") handleApproveOffer(item.id);
+                            if (activeTab === "subscriptions") handleApproveSubscription(item.referenceNumber);
+                          }}
+                          className="px-3 py-1.5 bg-black text-orange-500 font-bold text-xs rounded hover:bg-gray-800 transition"
+                        >
+                          Approve
+                        </button>
+                      )}
                     </td>
 
                   </tr>
@@ -236,7 +301,7 @@ export default function PendingApprovals() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {!searchQuery && totalPages > 1 && (
         <div className="flex justify-center items-center space-x-4 mt-6">
           <button disabled={page === 0} onClick={() => setPage(page - 1)} className="px-5 py-2 bg-white border border-gray-200 text-black font-semibold rounded-lg disabled:opacity-50 hover:bg-gray-50 transition">Previous</button>
           <span className="text-gray-500 font-bold">Page {page + 1} of {totalPages}</span>
@@ -395,19 +460,21 @@ export default function PendingApprovals() {
             {/* Modal Footer (Action Buttons) */}
             <div className="p-6 border-t border-gray-100 bg-white flex justify-end gap-4">
               <button onClick={closeModal} className="px-6 py-3 font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition">
-                Cancel
+                Close
               </button>
-              <button 
-                disabled={isProcessing}
-                onClick={() => {
-                  if (activeTab === "places") handleApprovePlace(selectedItem.id);
-                  if (activeTab === "offers") handleApproveOffer(selectedItem.id);
-                  if (activeTab === "subscriptions") handleApproveSubscription(selectedItem.referenceNumber);
-                }}
-                className="px-8 py-3 bg-black text-orange-500 font-extrabold rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
-              >
-                {isProcessing ? "Processing..." : `Approve ${activeTab.slice(0, -1)}`}
-              </button>
+              {selectedItem.status !== "APPROVED" && (
+                <button 
+                  disabled={isProcessing}
+                  onClick={() => {
+                    if (activeTab === "places") handleApprovePlace(selectedItem.id);
+                    if (activeTab === "offers") handleApproveOffer(selectedItem.id);
+                    if (activeTab === "subscriptions") handleApproveSubscription(selectedItem.referenceNumber);
+                  }}
+                  className="px-8 py-3 bg-black text-orange-500 font-extrabold rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
+                >
+                  {isProcessing ? "Processing..." : `Approve ${activeTab.slice(0, -1)}`}
+                </button>
+              )}
             </div>
 
           </div>

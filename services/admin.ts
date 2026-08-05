@@ -110,3 +110,82 @@ export async function updatePartnerStatus(partnerId: number, status: boolean) {
   });
   return res.json();
 }
+
+export const getPendingSubscriptions1 = async (page: number, mobile: string = "", reference: string = "") => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: "10"
+  });
+
+  // Search parameters තිබේ නම් පමණක් URL එකට එකතු කිරීම
+  if (mobile) params.append("mobile", mobile);
+  if (reference) params.append("reference", reference);
+
+  const response = await fetch(`http://localhost:8080/api/admin/partners/payments?${params.toString()}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { "Authorization": `Bearer ${token}` } : {})
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch subscriptions");
+  }
+
+  return await response.json();
+};
+
+
+export const searchSubscriptionByRef = async (refNum: string) => {
+  // Retrieve your auth token (adjust this based on where your app stores it)
+  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+
+  const response = await fetch(`${API_URL}/api/admin/subscriptions/search/${refNum}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      // Add the Authorization header here
+      "Authorization": `Bearer ${token}` 
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to search subscription");
+  }
+  
+  return response.json();
+};
+
+
+// Fetch Active Places Count
+export const getActivePlacesCount = async () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+  const response = await fetch(`${API_URL}/api/admin/getActivePlacesCount`, {
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+  if (!response.ok) throw new Error("Failed to fetch active places");
+  return response.json();
+};
+
+// Fetch Active Partner Count
+export const getActivePartnerCount = async () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+  const response = await fetch(`${API_URL}/api/admin/getActivePartnerCount`, {
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+  if (!response.ok) throw new Error("Failed to fetch active partners");
+  return response.json();
+};
+
+// Fetch Pending Tasks Count
+export const getPendingTasksCount = async () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+  const response = await fetch(`${API_URL}/api/admin/getPendingPlacesAndOffersAndSubscriptionsCount`, {
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+  if (!response.ok) throw new Error("Failed to fetch pending tasks");
+  return response.json();
+};
