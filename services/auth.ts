@@ -1,4 +1,4 @@
-export async function loginApi(identifier: string, password: string) {
+export async function loginApi(identifier: string, password: string,turnstileToken: string) {
   try {
     // Use the environment variable here
     const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -8,12 +8,12 @@ export async function loginApi(identifier: string, password: string) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ identifier, password }),
+      body: JSON.stringify({ identifier, password,turnstileToken }),
     });
 
     const data = await response.json();
 
-    if (data.status === 200) {
+    if (response.ok || data.status === 200) {
       if (data.role !== "ADMIN") {
         throw new Error("Access Denied. Only ADMIN accounts are permitted.");
       }
