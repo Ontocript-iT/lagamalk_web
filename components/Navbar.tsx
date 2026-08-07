@@ -43,10 +43,13 @@ export default function SmartNavbar() {
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
-        <Link href="/" className="text-3xl font-extrabold tracking-tighter text-black flex items-center gap-1">
-          Lagama<span className="text-orange-500">LK</span>
-          <span className="w-2 h-2 rounded-full bg-orange-500 mb-4 animate-pulse"></span>
-        </Link>
+        <Link href="/" className="flex items-center gap-2">
+  <img 
+    src="/newlogo1.png" // Replace with your actual image path
+    alt="Lma.LK Logo" 
+    className="h-20 w-auto" // Adjust height (h-10 = 40px) as needed
+  />
+</Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
