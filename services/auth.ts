@@ -7,6 +7,7 @@ export async function loginApi(identifier: string, password: string,turnstileTok
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Client-Type": "web"
       },
       body: JSON.stringify({ identifier, password,turnstileToken }),
     });
