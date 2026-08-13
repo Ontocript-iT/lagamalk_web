@@ -6,6 +6,7 @@ export default function Footer() {
       <p>&copy; {new Date().getFullYear()} Lagama LK App. All rights reserved.</p>
       <div className="mt-4">
         <Link href="/privacy" className="hover:text-orange-500 mx-2 transition">Privacy Policy</Link>
+        <Link href="/terms" className="hover:text-orange-500 mx-2 transition">Terms of Service</Link>
       </div>
     </footer>
   );
