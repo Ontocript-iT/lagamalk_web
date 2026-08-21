@@ -63,10 +63,27 @@ export default function TermsAndConditions() {
               </ul>
             </div>
 
+            <div>
+  <h2 className="text-2xl font-bold mb-4 border-l-4 border-black pl-4">
+    4. Business Verification & Listings
+  </h2>
+  <div className="space-y-4">
+    <p className="text-gray-600 text-lg leading-relaxed">
+      <strong>Business Verification:</strong> Business owners must contact our support team to verify their business before adding and managing places or offers within the App.
+    </p>
+    <p className="text-gray-600 text-lg leading-relaxed">
+      <strong>Account Setup:</strong> Upon successful verification, our team will grant access or assist in setting up your business profile to ensure the quality and reliability of the platform.
+    </p>
+    <p className="text-gray-600 text-lg leading-relaxed">
+      <strong>Accuracy of Information:</strong> Businesses are solely responsible for ensuring that all uploaded details—including business locations, offer terms, pricing, and images—are accurate, lawful, and up to date.
+    </p>
+  </div>
+</div>
+
             {/* Section 4 */}
             <div>
               <h2 className="text-2xl font-bold mb-4 border-l-4 border-black pl-4">
-                4. Business Subscriptions & Listings
+                5. Business Subscriptions & Listings
               </h2>
               <ul className="list-disc pl-6 space-y-3 text-gray-600 text-lg">
                 <li><strong className="text-black">Subscription Model:</strong> Business owners must purchase a subscription plan to add and manage their places and offers within the App.</li>
@@ -86,7 +103,7 @@ export default function TermsAndConditions() {
             {/* Section 5 */}
             <div>
               <h2 className="text-2xl font-bold mb-4 border-l-4 border-orange-500 pl-4">
-                5. Prohibited Conduct
+                6. Prohibited Conduct
               </h2>
               <p className="text-gray-600 text-lg leading-relaxed mb-4">
                 Users and business owners agree not to engage in any of the following prohibited activities:
@@ -101,7 +118,7 @@ export default function TermsAndConditions() {
             {/* Section 6 */}
             <div>
               <h2 className="text-2xl font-bold mb-4 border-l-4 border-black pl-4">
-                6. Limitation of Liability
+                7. Limitation of Liability
               </h2>
               <ul className="list-disc pl-6 space-y-3 text-gray-600 text-lg">
                 <li><strong className="text-black">Third-Party Content:</strong> The App is not responsible for expired offers, inaccurate business listings, or the quality of products and services provided by listed shops.</li>
@@ -112,7 +129,7 @@ export default function TermsAndConditions() {
             {/* Section 7 */}
             <div>
               <h2 className="text-2xl font-bold mb-4 border-l-4 border-orange-500 pl-4">
-                7. Account Termination
+                8. Account Termination
               </h2>
               <p className="text-gray-600 text-lg leading-relaxed">
                 The company reserves the right to suspend, disable, or permanently terminate any user or business account at any time, without prior notice, if there is a violation of these Terms and Conditions.
@@ -122,7 +139,7 @@ export default function TermsAndConditions() {
             {/* Section 8 */}
             <div>
               <h2 className="text-2xl font-bold mb-4 border-l-4 border-black pl-4">
-                8. Intellectual Property
+                9. Intellectual Property
               </h2>
               <ul className="list-disc pl-6 space-y-3 text-gray-600 text-lg">
                 <li><strong className="text-black">App Assets:</strong> All software, API architecture, source code, designs, branding, and logos associated with the App are the exclusive property of the API company.</li>
@@ -130,10 +147,10 @@ export default function TermsAndConditions() {
               </ul>
             </div>
 
-            {/* Section 9 */}
+            {/* Section 10 */}
             <div>
               <h2 className="text-2xl font-bold mb-4 border-l-4 border-orange-500 pl-4">
-                9. Contact Us
+                10. Contact Us
               </h2>
               <p className="text-gray-600 text-lg leading-relaxed mb-4">
                 If you have any questions or concerns regarding these Terms and Conditions, please contact us at:
