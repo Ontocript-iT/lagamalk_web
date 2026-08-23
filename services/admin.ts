@@ -3,6 +3,7 @@ const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 // Helper to get headers with the auth token
 const getHeaders = () => {
   const token = localStorage.getItem("token");
+  console.log("Using token:", token); // Debugging line
   return {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
@@ -190,3 +191,99 @@ export const getPendingTasksCount = async () => {
   return response.json();
 };
 
+export async function requestSubscription(phoneNumber: string, plan: string, placesCount: number) {
+  // Matches backend route: /api/subscriptions/request/{id}?plan={plan}&placesCount={placesCount}
+  const url = `${API_URL}/api/subscriptions/request/${phoneNumber}?plan=${plan}&placesCount=${placesCount}`;
+
+  // Note: Assuming the backend expects a POST request for creation.
+  // Change method to 'GET' if your backend uses @GetMapping.
+  const res = await fetch(url, {
+    method: "POST",
+    headers: getHeaders()
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(data?.message || "Failed to request subscription.");
+  }
+
+  return data;
+}
+
+/**
+ * Approve a pending subscription by reference number
+ */
+export async function approveSubscription1(referenceNumber: string) {
+  // Matches backend route: /api/admin/subscriptions/approve/{referenceNumber}
+  const url = `${API_URL}/api/admin/subscriptions/approve/${referenceNumber}`;
+
+  // Note: Assuming POST or PUT. Update if your backend requires something else.
+  const res = await fetch(url, {
+    method: "POST",
+    headers: getHeaders()
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(data?.message || "Failed to approve subscription.");
+  }
+
+  return data || { success: true };
+}
+
+/**
+ * Add more places to an existing user's active subscription
+ */
+export async function updatePlaceCount(userId: string, newPlaceCount: number) {
+  // Matches backend route: /api/places/updatePlaceCountByUserMobile/{userIdentifier}?newPlaceCount={newPlaceCount}
+  const url = `${API_URL}/api/places/updatePlaceCountByUserMobile/${userId}?newPlaceCount=${newPlaceCount}`;
+
+  // Using POST or PUT depending on your backend (POST is a safe default for custom actions)
+  const res = await fetch(url, {
+    method: "PUT", // Change to "PUT" if your Spring controller uses @PutMapping
+    headers: getHeaders()
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(data?.message || "Failed to update place count.");
+  }
+
+  return data;
+}
+
+/**
+ * Update Place Details
+ */
+export async function updatePlaceDetails(placeId: number | string, placeData: any) {
+  const url = `${API_URL}/api/places/updatePlaceDetails/${placeId}`;
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify(placeData)
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(data?.message || "Failed to update place details.");
+  }
+
+  return data;
+}
+
+export async function searchCitiesApi(query: string) {
+  const url = `${API_URL}/api/data/cities?search=${encodeURIComponent(query)}&page=0&size=10`;
+  const res = await fetch(url, { headers: getHeaders() });
+  return res.json();
+}
+
+export async function searchCategoriesApi(query: string) {
+  const url = `${API_URL}/api/data/categories?search=${encodeURIComponent(query)}`;
+  const res = await fetch(url, { headers: getHeaders() });
+  return res.json();
+}

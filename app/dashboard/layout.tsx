@@ -12,7 +12,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Pending Approvals", path: "/dashboard/pending", icon: "⏳" },
     { name: "Partner Directory", path: "/dashboard/partners", icon: "👥" },
     { name: "City Explorer", path: "/dashboard/cities", icon: "🏙️" }, // NEW ITEM
-    { name: "Payment History", path: "/dashboard/payments", icon: "💳" }, // NEW ITEM
+    { name: "Payment History", path: "/dashboard/payments", icon: "💳" },
+    { name: "Subscription", path: "/dashboard/manage-subscription", icon: "💳" },
   ];
 
   return (
