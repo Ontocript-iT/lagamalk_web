@@ -5,6 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.ontocriptit.lagama",
       "sha256_cert_fingerprints": [
+        "A8:64:33:10:B3:8D:7D:86:5C:93:32:F3:1E:E9:91:AD:5F:70:A2:6C:05:D0:E1:3A:1C:24:79:AD:36:EA:4A:33",
+        "9B:07:41:79:FF:34:4C:76:35:31:AD:D0:B7:28:DF:74:5A:9E:16:56:26:FA:FF:5F:9A:6E:88:27:A2:B4:34:FE",
         "2F:38:55:3A:C1:B5:CA:FA:68:CC:C8:08:B0:5D:D9:9C:11:69:5A:4E:75:C2:1F:85:79:C0:D4:56:D8:1C:1F:D1"
       ]
     }
