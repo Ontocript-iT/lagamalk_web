@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ontocriptit.lagama",
+      "sha256_cert_fingerprints": [
+        "2F:38:55:3A:C1:B5:CA:FA:68:CC:C8:08:B0:5D:D9:9C:11:69:5A:4E:75:C2:1F:85:79:C0:D4:56:D8:1C:1F:D1"
+      ]
+    }
+  }
+]
